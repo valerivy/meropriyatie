@@ -1,0 +1,105 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>День социального работника</title>
+<style>
+body{font-family:Arial,sans-serif;background:#f4f4f4;margin:0;padding:20px}
+.wrap{max-width:1200px;margin:auto;background:#fff;padding:20px;border-radius:12px}
+h1,p{text-align:center}
+.stage{background:#ddd;padding:15px;border-radius:20px;text-align:center;font-weight:bold;margin:10px auto 20px;max-width:800px}
+.row{display:flex;gap:8px;justify-content:center;align-items:center;margin:10px 0}
+.label{width:80px;text-align:right;margin-right:10px}
+.seat{width:42px;height:42px;border-radius:50%;border:none;background:#cfe8a9;cursor:pointer}
+.taken{background:#e57373;color:#fff}
+.contour{display:flex;justify-content:space-between;align-items:flex-end;margin-top:20px}
+.col{display:flex;flex-direction:column;gap:8px}
+.bottom{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:10px}
+@media(max-width:700px){.seat{width:34px;height:34px;font-size:12px} .label{width:55px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>День социального работника</h1>
+<p>Выберите место и укажите имя</p>
+<div class="stage">СЦЕНА</div>
+<div id="hall"></div>
+</div>
+<script>
+const API="https://script.google.com/macros/s/AKfycbwHEMWUGtFaydrKLsPmEFbNCoO39M03fpm9GGbDEonwVh7ijOkMDY46kjAl0cD0XN7n/exec";
+
+const hall=document.getElementById('hall');
+
+function seatBtn(id,label){
+ const b=document.createElement('button');
+ b.className='seat';
+ b.dataset.id=id;
+ b.textContent=label;
+ b.onclick=()=>reserve(id);
+ return b;
+}
+
+for(let r=1;r<=9;r++) {
+ let row=document.createElement('div');
+ row.className='row';
+ row.innerHTML=`<div class="label">${r} ряд</div>`;
+ for(let s=10;s>=1;s--) row.appendChild(seatBtn(`R${r}-${s}`,s));
+ hall.appendChild(row);
+}
+
+let r10=document.createElement('div');
+r10.className='row';
+r10.innerHTML='<div class="label">10 ряд</div>';
+for(let s=8;s>=1;s--) r10.appendChild(seatBtn(`R10-${s}`,s));
+hall.appendChild(r10);
+
+let r11=document.createElement('div');
+r11.className='row';
+r11.innerHTML='<div class="label">11 ряд</div>';
+for(let s=6;s>=1;s--) r11.appendChild(seatBtn(`R11-${s}`,s));
+hall.appendChild(r11);
+
+const contour=document.createElement('div');
+contour.className='contour';
+contour.innerHTML=`
+<div class="col" id="left"></div>
+<div style="flex:1">
+<div class="bottom" id="bottom"></div>
+<div style="text-align:center;margin-top:10px">ДВЕРЬ</div>
+</div>
+<div class="col" id="right"></div>`;
+hall.appendChild(contour);
+
+[16,15,14].forEach(n=>left.appendChild(seatBtn('C-'+n,n)));
+[1,2,3].forEach(n=>right.appendChild(seatBtn('C-'+n,n)));
+[13,12,11,10,9,8,7,6,5,4].forEach(n=>bottom.appendChild(seatBtn('C-'+n,n)));
+
+async function load(){
+ try{
+ const busy=await fetch(API).then(r=>r.json());
+ document.querySelectorAll('.seat').forEach(b=>{
+   if(busy.includes(b.dataset.id)){
+     b.classList.add('taken');
+     b.disabled=true;
+   }
+ });
+ }catch(e){console.log(e)}
+}
+
+async function reserve(id){
+ const name=prompt('Введите имя');
+ if(!name) return;
+ const res=await fetch(API,{
+   method:'POST',
+   body:JSON.stringify({seat:id,name:name})
+ });
+ alert('Заявка отправлена');
+ location.reload();
+}
+
+load();
+</script>
+</body>
+</html>
